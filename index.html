@@ -181,9 +181,7 @@
       text-align: center;
     }
   </style>
-</head><script>
-alert("JS CARREGAT");
-</script>
+</head>
 <body>
   <div class="wrap">
     <header>
@@ -446,7 +444,7 @@ alert("JS CARREGAT");
       setLive(false, "Desconnectat");
     }
 
-    window.addEventListener("load", () => {
+window.addEventListener("DOMContentLoaded", () => {
   const loginBtn = document.getElementById("loginBtn");
   const email = document.getElementById("email");
   const password = document.getElementById("password");
@@ -454,12 +452,9 @@ alert("JS CARREGAT");
 
   loginBtn.addEventListener("click", async () => {
     errorBox.textContent = "";
-
-    loginBtn.disabled = true;
+    console.log("LOGIN CLICK OK");
 
     try {
-      console.log("LOGIN CLICK OK");
-
       const res = await signInWithEmailAndPassword(
         auth,
         email.value.trim(),
@@ -469,11 +464,11 @@ alert("JS CARREGAT");
       console.log("LOGIN OK", res.user);
 
     } catch (err) {
-      console.log("LOGIN ERROR", err);
-      alert(err.code + "\n" + err.message);
-      errorBox.textContent = err.code + " - " + err.message;
-    } finally {
-      loginBtn.disabled = false;
+      console.error("LOGIN ERROR:", err);
+
+      errorBox.textContent = `${err.code} - ${err.message}`;
+      errorBox.style.color = "#fca5a5";
+      errorBox.style.marginTop = "12px";
     }
   });
 });
