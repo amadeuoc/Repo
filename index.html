@@ -446,20 +446,37 @@ alert("JS CARREGAT");
       setLive(false, "Desconnectat");
     }
 
-    window.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("loginBtn").addEventListener("click", async () => {
-      $("loginError").textContent = "";
-      $("loginBtn").disabled = true;
-      try {
-        await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value);
-      } catch (err) {
-  console.log(err);
-  alert(err.code + "\n" + err.message);
-  $("loginError").textContent = err.code + " - " + err.message;
-} finally {
-        $("loginBtn").disabled = false;
-      }
-    });
+    window.addEventListener("load", () => {
+  const loginBtn = document.getElementById("loginBtn");
+  const email = document.getElementById("email");
+  const password = document.getElementById("password");
+  const errorBox = document.getElementById("loginError");
+
+  loginBtn.addEventListener("click", async () => {
+    errorBox.textContent = "";
+
+    loginBtn.disabled = true;
+
+    try {
+      console.log("LOGIN CLICK OK");
+
+      const res = await signInWithEmailAndPassword(
+        auth,
+        email.value.trim(),
+        password.value
+      );
+
+      console.log("LOGIN OK", res.user);
+
+    } catch (err) {
+      console.log("LOGIN ERROR", err);
+      alert(err.code + "\n" + err.message);
+      errorBox.textContent = err.code + " - " + err.message;
+    } finally {
+      loginBtn.disabled = false;
+    }
+  });
+});
 
     $("password").addEventListener("keydown", (e) => {
       if (e.key === "Enter") $("loginBtn").click();
