@@ -1,493 +1,136 @@
 <!doctype html>
 <html lang="ca">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bullflow Alerts Viewer</title>
-  <style>
-    :root {
-      color-scheme: dark;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #08090d;
-      color: #f4f4f5;
-    }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at 20% 0%, rgba(37, 99, 235, 0.22), transparent 32rem),
-        radial-gradient(circle at 90% 20%, rgba(16, 185, 129, 0.12), transparent 28rem),
-        #08090d;
-    }
-    .wrap {
-      width: min(1180px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: 32px 0;
-    }
-    header {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-    h1 {
-      margin: 0;
-      font-size: clamp(24px, 3vw, 38px);
-      letter-spacing: -0.04em;
-    }
-    .sub {
-      margin: 6px 0 0;
-      color: #a1a1aa;
-      font-size: 14px;
-    }
-    .card {
-      border: 1px solid rgba(255,255,255,0.09);
-      background: rgba(15, 15, 20, 0.76);
-      box-shadow: 0 24px 80px rgba(0,0,0,.35);
-      backdrop-filter: blur(14px);
-      border-radius: 22px;
-    }
-    .login {
-      max-width: 460px;
-      padding: 22px;
-      margin-top: 36px;
-    }
-    label {
-      display: block;
-      font-size: 12px;
-      color: #a1a1aa;
-      margin: 14px 0 7px;
-    }
-    input {
-      box-sizing: border-box;
-      width: 100%;
-      border: 1px solid rgba(255,255,255,.12);
-      background: #09090b;
-      color: white;
-      border-radius: 12px;
-      padding: 12px 13px;
-      outline: none;
-      font-size: 14px;
-    }
-    input:focus { border-color: #60a5fa; }
-    button {
-      appearance: none;
-      border: 0;
-      background: white;
-      color: #050505;
-      font-weight: 750;
-      border-radius: 13px;
-      padding: 11px 14px;
-      cursor: pointer;
-    }
-    button.secondary {
-      background: rgba(255,255,255,.08);
-      color: white;
-      border: 1px solid rgba(255,255,255,.11);
-    }
-    button:disabled { opacity: .55; cursor: not-allowed; }
-    .row {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-top: 16px;
-    }
-    .toolbar {
-      padding: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-    .status {
-      color: #a1a1aa;
-      font-size: 13px;
-    }
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border: 1px solid rgba(255,255,255,.1);
-      background: rgba(255,255,255,.06);
-      border-radius: 999px;
-      padding: 7px 10px;
-      color: #d4d4d8;
-      font-size: 12px;
-    }
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #71717a;
-    }
-    .dot.live { background: #22c55e; box-shadow: 0 0 0 6px rgba(34,197,94,.12); }
-    .alerts {
-      display: grid;
-      gap: 10px;
-    }
-    .alert {
-      padding: 14px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      align-items: start;
-    }
-    .alert.new {
-      border-color: rgba(34,197,94,.38);
-      background: rgba(20, 83, 45, .18);
-    }
-    .title {
-      font-size: 15px;
-      font-weight: 750;
-      margin-bottom: 6px;
-    }
-    .meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      color: #a1a1aa;
-      font-size: 12px;
-    }
-    .tag {
-      border: 1px solid rgba(255,255,255,.09);
-      border-radius: 999px;
-      padding: 4px 8px;
-      background: rgba(255,255,255,.045);
-    }
-    .money { color: #86efac; font-weight: 750; }
-    details {
-      grid-column: 1 / -1;
-      color: #a1a1aa;
-      font-size: 12px;
-    }
-    pre {
-      white-space: pre-wrap;
-      word-break: break-word;
-      background: #050507;
-      border: 1px solid rgba(255,255,255,.07);
-      border-radius: 12px;
-      padding: 12px;
-      max-height: 260px;
-      overflow: auto;
-    }
-    .hidden { display: none; }
-    .error { color: #fca5a5; font-size: 13px; margin-top: 12px; }
-    .empty {
-      padding: 28px;
-      color: #a1a1aa;
-      text-align: center;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bullflow Alerts Viewer</title>
 </head>
-<body>
-  <div class="wrap">
-    <header>
-      <div>
-        <h1>Bullflow Alerts Viewer</h1>
-        <p class="sub">Login Firebase + escolta realtime de <code>_flow_alerts</code>. Mostra les alertes personals i les system alerts.</p>
-      </div>
-      <div id="authActions" class="row hidden">
-        <span id="userBadge" class="pill"></span>
-        <button id="logoutBtn" class="secondary">Logout</button>
-      </div>
-    </header>
 
-    <section id="loginCard" class="card login">
-      <h2 style="margin:0 0 4px">Login</h2>
-      <p class="sub">Les credencials només s’envien a Firebase Auth des del teu navegador.</p>
-      <label>Email</label>
-      <input id="email" type="email" autocomplete="username" />
-      <label>Password</label>
-      <input id="password" type="password" autocomplete="current-password" />
-      <div class="row">
-        <button id="loginBtn">Entrar</button>
-        <button id="notifyBtn" class="secondary" type="button">Permetre notificacions</button>
-      </div>
-      <div id="loginError" class="error"></div>
-    </section>
+<body style="background:#111;color:white;font-family:sans-serif">
 
-    <section id="app" class="hidden">
-      <div class="toolbar card">
-        <div class="row" style="margin:0">
-          <span class="pill"><span id="liveDot" class="dot"></span><span id="liveText">Desconnectat</span></span>
-          <span class="pill"><span id="count">0</span> alertes</span>
-          <span class="pill">Query: user == <span id="queryUser"></span></span>
-        </div>
-        <div class="row" style="margin:0">
-          <button id="clearBtn" class="secondary">Netejar pantalla</button>
-          <label style="display:flex;align-items:center;gap:8px;margin:0;color:#d4d4d8">
-            <input id="soundToggle" type="checkbox" checked style="width:auto" /> so
-          </label>
-        </div>
-      </div>
-      <div id="status" class="status"></div>
-      <div id="alerts" class="alerts"></div>
-      <div id="empty" class="card empty">Esperant alertes…</div>
-    </section>
-  </div>
+<h2>Bullflow Alerts Viewer</h2>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import {
-      getAuth,
-      signInWithEmailAndPassword,
-      onAuthStateChanged,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-    import {
-      getFirestore,
-      collection,
-      query,
-      where,
-      orderBy,
-      limit,
-      onSnapshot
-    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+<input id="email" placeholder="email"><br><br>
+<input id="password" type="password" placeholder="password"><br><br>
+<button id="loginBtn">Login</button>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAfa3y-u4PdIgOmqrXVXJKV6Up5ntyZDJU",
-      authDomain: "liteflow-40a37.firebaseapp.com",
-      projectId: "liteflow-40a37",
-      storageBucket: "liteflow-40a37.appspot.com",
-      messagingSenderId: "839892033407",
-      appId: "1:839892033407:web:a3616853e6c095a52a444a",
-      measurementId: "G-YKZZT8E9J6"
-    };
+<hr>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+<div id="status">Not logged</div>
+<div id="alerts"></div>
 
-    const $ = (id) => document.getElementById(id);
-    const loginCard = $("loginCard");
-    const appView = $("app");
-    const alertsEl = $("alerts");
-    const emptyEl = $("empty");
-    const statusEl = $("status");
-    const liveDot = $("liveDot");
-    const liveText = $("liveText");
-    const countEl = $("count");
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-    let unsubPersonal = null;
-    let unsubSystem = null;
-    let alerts = new Map();
-    let initialized = false;
+const firebaseConfig = {
+  apiKey: "AIzaSyAfa3y-u4PdIgOmqrXVXJKV6Up5ntyZDJU",
+  authDomain: "liteflow-40a37.firebaseapp.com",
+  projectId: "liteflow-40a37"
+};
 
-    function setLive(isLive, text) {
-      liveDot.classList.toggle("live", isLive);
-      liveText.textContent = text;
-    }
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-    function safeDate(value) {
-      if (!value) return "";
-      if (typeof value.toDate === "function") return value.toDate();
-      if (typeof value === "number") return new Date(value > 1e12 ? value : value * 1000);
-      return new Date(value);
-    }
+const alertsEl = document.getElementById("alerts");
 
-    function money(n) {
-      const x = Number(n);
-      if (!Number.isFinite(x)) return "";
-      if (Math.abs(x) >= 1e6) return "$" + (x / 1e6).toFixed(2) + "M";
-      if (Math.abs(x) >= 1e3) return "$" + (x / 1e3).toFixed(1) + "K";
-      return "$" + x.toFixed(2);
-    }
+function parseOptionSymbol(sym = "") {
+  if (!sym.startsWith("O:")) return sym;
+  const raw = sym.slice(2);
+  const idx = raw.search(/\d{6}/);
+  if (idx < 0) return sym;
 
-    function parseOptionSymbol(sym = "") {
-      if (!sym.startsWith("O:")) return sym || "—";
-      const raw = sym.slice(2);
-      const idx = raw.search(/\d{6}/);
-      if (idx < 0) return sym;
-      const ticker = raw.slice(0, idx);
-      const yy = raw.slice(idx, idx + 2);
-      const mm = raw.slice(idx + 2, idx + 4);
-      const dd = raw.slice(idx + 4, idx + 6);
-      const type = raw[idx + 6] === "C" ? "CALL" : "PUT";
-      const strike = Number.parseInt(raw.slice(idx + 7), 10) / 1000;
-      return `${ticker} ${strike:g} ${type} 20${yy}-${mm}-${dd}`;
-    }
+  const ticker = raw.slice(0, idx);
+  const yy = raw.slice(idx, idx + 2);
+  const mm = raw.slice(idx + 2, idx + 4);
+  const dd = raw.slice(idx + 4, idx + 6);
+  const type = raw[idx + 6] === "C" ? "CALL" : "PUT";
+  const strike = Number.parseInt(raw.slice(idx + 7), 10) / 1000;
 
-    function playBeep() {
-      if (!$("soundToggle").checked) return;
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.frequency.value = 880;
-      gain.gain.value = 0.06;
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      setTimeout(() => {
-        osc.stop();
-        ctx.close();
-      }, 160);
-    }
+  return `${ticker} ${Number.isInteger(strike) ? strike : strike.toFixed(2)} ${type} 20${yy}-${mm}-${dd}`;
+}
 
-    function notify(alert) {
-      playBeep();
-      if (!("Notification" in window) || Notification.permission !== "granted") return;
-      const symbol = parseOptionSymbol(alert.symbol || alert.sym || "");
-      const premium = money(alert.alertPremium ?? alert.premium ?? alert.p);
-      new Notification(`Bullflow: ${alert.filterName || alert.alertName || "Alert"}`, {
-        body: `${symbol}${premium ? " · " + premium : ""}`,
-        icon: "https://bullflow.io/bullflow_3.png",
-        badge: "https://bullflow.io/bullflow_3.png"
-      });
-    }
+function renderAlert(data) {
+  const div = document.createElement("div");
+  div.style.border = "1px solid #333";
+  div.style.padding = "10px";
+  div.style.margin = "10px 0";
 
-    function upsertAlert(doc, source) {
-      const data = { id: doc.id, source, ...doc.data() };
-      const key = `${source}:${doc.id}`;
-      const isNew = !alerts.has(key);
-      alerts.set(key, data);
-      if (initialized && isNew) notify(data);
-      render();
-    }
+  div.innerHTML = `
+    <b>${data.filterName || "Alert"}</b><br>
+    ${parseOptionSymbol(data.symbol || data.sym || "")}<br>
+    Premium: ${data.alertPremium || data.premium || ""}<br>
+    <pre>${JSON.stringify(data, null, 2)}</pre>
+  `;
 
-    function render() {
-      const list = [...alerts.values()].sort((a, b) => {
-        const da = +safeDate(a.timestamp || a.createdAt || a.ut);
-        const db = +safeDate(b.timestamp || b.createdAt || b.ut);
-        return db - da;
-      });
-      alertsEl.innerHTML = "";
-      countEl.textContent = String(list.length);
-      emptyEl.classList.toggle("hidden", list.length > 0);
+  alertsEl.prepend(div);
+}
 
-      for (const a of list) {
-        const when = safeDate(a.timestamp || a.createdAt || a.ut);
-        const symbol = a.symbol || a.sym || "";
-        const premium = a.alertPremium ?? a.premium ?? a.p;
-        const item = document.createElement("article");
-        item.className = "alert card";
-        item.innerHTML = `
-          <div>
-            <div class="title">${escapeHtml(a.filterName || a.alertName || a.topic || "Alert")}</div>
-            <div class="meta">
-              <span class="tag">${escapeHtml(a.source)}</span>
-              <span class="tag">${escapeHtml(parseOptionSymbol(symbol))}</span>
-              ${premium != null ? `<span class="tag money">${escapeHtml(money(premium))}</span>` : ""}
-              ${a.tradePrice != null ? `<span class="tag">tradePrice ${escapeHtml(String(a.tradePrice))}</span>` : ""}
-              ${a.alertType ? `<span class="tag">${escapeHtml(String(a.alertType))}</span>` : ""}
-            </div>
-          </div>
-          <div class="status">${Number.isFinite(+when) ? when.toLocaleString() : ""}</div>
-          <details>
-            <summary>Raw JSON</summary>
-            <pre>${escapeHtml(JSON.stringify(a, replacer, 2))}</pre>
-          </details>
-        `;
-        alertsEl.appendChild(item);
-      }
-    }
+document.getElementById("loginBtn").onclick = async () => {
+  try {
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
 
-    function replacer(_key, value) {
-      if (value && typeof value.toDate === "function") return value.toDate().toISOString();
-      return value;
-    }
+    console.log("LOGIN TRY", email);
 
-    function escapeHtml(s) {
-      return String(s ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
+    await signInWithEmailAndPassword(auth, email, pass);
 
-    async function startListeners(user) {
-      stopListeners();
-      alerts.clear();
-      initialized = false;
-      render();
+  } catch (e) {
+    console.error("LOGIN ERROR", e);
+    alert(e.message);
+  }
+};
 
-      const userKey = user.email;
-      $("queryUser").textContent = userKey;
-      const col = collection(db, "_flow_alerts");
-      const personalQ = query(col, where("user", "==", userKey), orderBy("timestamp", "desc"), limit(100));
-      const systemQ = query(col, where("isSystemAlert", "==", true), orderBy("timestamp", "desc"), limit(100));
+onAuthStateChanged(auth, (user) => {
+  console.log("AUTH STATE:", user);
 
-      setLive(false, "Connectant…");
+  if (!user) {
+    document.getElementById("status").innerText = "Not logged";
+    return;
+  }
 
-      unsubPersonal = onSnapshot(personalQ, (snap) => {
-        snap.docChanges().forEach((change) => {
-          if (change.type !== "removed") upsertAlert(change.doc, "personal");
-        });
-        initialized = true;
-        setLive(true, "Realtime actiu");
-        statusEl.textContent = `Última actualització personal: ${new Date().toLocaleTimeString()}`;
-      }, (err) => {
-        console.error(err);
-        statusEl.textContent = `Error personal listener: ${err.message}`;
-        setLive(false, "Error");
-      });
+  document.getElementById("status").innerText = "Logged: " + user.email;
 
-      unsubSystem = onSnapshot(systemQ, (snap) => {
-        snap.docChanges().forEach((change) => {
-          if (change.type !== "removed") upsertAlert(change.doc, "system");
-        });
-        initialized = true;
-      }, (err) => {
-        console.error(err);
-        statusEl.textContent = `Error system listener: ${err.message}`;
-      });
-    }
+  const col = collection(db, "_flow_alerts");
 
-    function stopListeners() {
-      if (unsubPersonal) unsubPersonal();
-      if (unsubSystem) unsubSystem();
-      unsubPersonal = null;
-      unsubSystem = null;
-      setLive(false, "Desconnectat");
-    }
+  console.log("START LISTENER...");
 
-    $("loginBtn").addEventListener("click", async () => {
-      $("loginError").textContent = "";
-      $("loginBtn").disabled = true;
-      try {
-        await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value);
-      } catch (err) {
-        $("loginError").textContent = err.message;
-      } finally {
-        $("loginBtn").disabled = false;
+  const q = query(
+    col,
+    where("user", "==", user.email),
+    orderBy("timestamp", "desc"),
+    limit(50)
+  );
+
+  onSnapshot(q, (snap) => {
+    console.log("SNAPSHOT", snap.size);
+
+    snap.docChanges().forEach(change => {
+      console.log("CHANGE", change.type, change.doc.data());
+
+      if (change.type !== "removed") {
+        renderAlert(change.doc.data());
       }
     });
+  }, (err) => {
+    console.error("FIRESTORE ERROR", err);
+  });
+});
+</script>
 
-    $("password").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") $("loginBtn").click();
-    });
-
-    $("logoutBtn").addEventListener("click", async () => {
-      stopListeners();
-      await signOut(auth);
-    });
-
-    $("notifyBtn").addEventListener("click", async () => {
-      if ("Notification" in window) await Notification.requestPermission();
-    });
-
-    $("clearBtn").addEventListener("click", () => {
-      alerts.clear();
-      render();
-    });
-
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        stopListeners();
-        loginCard.classList.remove("hidden");
-        appView.classList.add("hidden");
-        $("authActions").classList.add("hidden");
-        return;
-      }
-      loginCard.classList.add("hidden");
-      appView.classList.remove("hidden");
-      $("authActions").classList.remove("hidden");
-      $("userBadge").textContent = user.email;
-      startListeners(user);
-    });
-  </script>
 </body>
 </html>
