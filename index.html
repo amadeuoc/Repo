@@ -446,7 +446,8 @@ alert("JS CARREGAT");
       setLive(false, "Desconnectat");
     }
 
-    $("loginBtn").addEventListener("click", async () => {
+    window.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("loginBtn").addEventListener("click", async () => {
       $("loginError").textContent = "";
       $("loginBtn").disabled = true;
       try {
