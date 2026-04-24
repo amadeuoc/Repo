@@ -48,6 +48,18 @@ const db = getFirestore(app);
 
 const alertsEl = document.getElementById("alerts");
 
+let initialPersonalLoaded = false;
+let initialSystemLoaded = false;
+
+// FORMAT DATA
+function formatDate(ts) {
+  const d = new Date(ts * 1000);
+  const pad = n => String(n).padStart(2, "0");
+
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())} ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+}
+
+// PARSE SYMBOL
 function parseOptionSymbol(sym = "") {
   if (!sym.startsWith("O:")) return sym;
   const raw = sym.slice(2);
@@ -61,43 +73,43 @@ function parseOptionSymbol(sym = "") {
   const type = raw[idx + 6] === "C" ? "CALL" : "PUT";
   const strike = Number.parseInt(raw.slice(idx + 7), 10) / 1000;
 
-  return `${ticker} ${Number.isInteger(strike) ? strike : strike.toFixed(2)} ${type} 20${yy}-${mm}-${dd}`;
+  return `${ticker} ${strike} ${type} 20${yy}-${mm}-${dd}`;
 }
 
-function renderAlert(data) {
+// RENDER
+function renderAlert(data, source) {
   const div = document.createElement("div");
   div.style.border = "1px solid #333";
   div.style.padding = "10px";
   div.style.margin = "10px 0";
 
   div.innerHTML = `
-    <b>${data.filterName || "Alert"}</b><br>
-    ${parseOptionSymbol(data.symbol || data.sym || "")}<br>
-    Premium: ${data.alertPremium || data.premium || ""}<br>
-    <pre>${JSON.stringify(data, null, 2)}</pre>
+    <b>${data.filterName || data.topic || "Alert"} (${source})</b><br>
+    ${parseOptionSymbol(data.symbol || "")}<br>
+    Premium: ${data.alertPremium || ""}<br>
+    Price: ${data.tradePrice || ""}<br>
+    Time: ${formatDate(data.timestamp)}<br>
+    Tags: ${(data.activeTags || []).join(", ")}
   `;
 
   alertsEl.prepend(div);
 }
 
+// LOGIN
 document.getElementById("loginBtn").onclick = async () => {
   try {
     const email = document.getElementById("email").value;
     const pass = document.getElementById("password").value;
 
-    console.log("LOGIN TRY", email);
-
     await signInWithEmailAndPassword(auth, email, pass);
 
   } catch (e) {
-    console.error("LOGIN ERROR", e);
     alert(e.message);
   }
 };
 
+// AUTH STATE
 onAuthStateChanged(auth, (user) => {
-  console.log("AUTH STATE:", user);
-
   if (!user) {
     document.getElementById("status").innerText = "Not logged";
     return;
@@ -107,28 +119,54 @@ onAuthStateChanged(auth, (user) => {
 
   const col = collection(db, "_flow_alerts");
 
-  console.log("START LISTENER...");
-
-  const q = query(
+  // PERSONAL ALERTS
+  const personalQ = query(
     col,
     where("user", "==", user.email),
     orderBy("timestamp", "desc"),
     limit(50)
   );
 
-  onSnapshot(q, (snap) => {
-    console.log("SNAPSHOT", snap.size);
-
+  onSnapshot(personalQ, (snap) => {
     snap.docChanges().forEach(change => {
-      console.log("CHANGE", change.type, change.doc.data());
+      const data = change.doc.data();
 
       if (change.type !== "removed") {
-        renderAlert(change.doc.data());
+        renderAlert(data, "personal");
+
+        if (initialPersonalLoaded && change.type === "added") {
+          console.log("NEW PERSONAL ALERT", data);
+        }
       }
     });
-  }, (err) => {
-    console.error("FIRESTORE ERROR", err);
+
+    initialPersonalLoaded = true;
   });
+
+  // SYSTEM ALERTS
+  const systemQ = query(
+    col,
+    where("isSystemAlert", "==", true),
+    orderBy("timestamp", "desc"),
+    limit(50)
+  );
+
+  onSnapshot(systemQ, (snap) => {
+    snap.docChanges().forEach(change => {
+      const data = change.doc.data();
+
+      if (change.type !== "removed") {
+        renderAlert(data, "system");
+
+        if (initialSystemLoaded && change.type === "added") {
+          console.log("NEW SYSTEM ALERT", data);
+        }
+      }
+    });
+
+    initialSystemLoaded = true;
+  });
+
 });
 </script>
 
