@@ -450,8 +450,10 @@
       try {
         await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value);
       } catch (err) {
-        $("loginError").textContent = err.message;
-      } finally {
+  console.log(err);
+  alert(err.code + "\n" + err.message);
+  $("loginError").textContent = err.code + " - " + err.message;
+} finally {
         $("loginBtn").disabled = false;
       }
     });
