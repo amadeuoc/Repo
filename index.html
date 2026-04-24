@@ -444,46 +444,35 @@
       setLive(false, "Desconnectat");
     }
 
+    $("loginBtn").addEventListener("click", async () => {
+      $("loginError").textContent = "";
+      $("loginBtn").disabled = true;
+      try {
+        await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value);
+      } catch (err) {
+        $("loginError").textContent = err.message;
+      } finally {
+        $("loginBtn").disabled = false;
+      }
+    });
 
-window.addEventListener("DOMContentLoaded", () => {
-  const loginBtn = document.getElementById("loginBtn");
-  const email = document.getElementById("email");
-  const password = document.getElementById("password");
-  const errorBox = document.getElementById("loginError");
+    $("password").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") $("loginBtn").click();
+    });
 
-  loginBtn.addEventListener("click", async () => {
-    alert("1 - click OK");
+    $("logoutBtn").addEventListener("click", async () => {
+      stopListeners();
+      await signOut(auth);
+    });
 
-    alert("email: " + email.value);
-    alert("password length: " + password.value.length);
+    $("notifyBtn").addEventListener("click", async () => {
+      if ("Notification" in window) await Notification.requestPermission();
+    });
 
-    try {
-      await signInWithEmailAndPassword(auth, email.value, password.value);
-      alert("2 - després del login");
-    } catch (e) {
-      alert("ERROR: " + e.code + "\n" + e.message);
-    }
-  });
-
-  $("password").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") $("loginBtn").click();
-  });
-
-  $("logoutBtn").addEventListener("click", async () => {
-    stopListeners();
-    await signOut(auth);
-  });
-
-  $("notifyBtn").addEventListener("click", async () => {
-    if ("Notification" in window) await Notification.requestPermission();
-  });
-
-  $("clearBtn").addEventListener("click", () => {
-    alerts.clear();
-    render();
-  });
-});
-
+    $("clearBtn").addEventListener("click", () => {
+      alerts.clear();
+      render();
+    });
 
     onAuthStateChanged(auth, (user) => {
       if (!user) {
