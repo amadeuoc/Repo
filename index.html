@@ -451,26 +451,14 @@ window.addEventListener("DOMContentLoaded", () => {
   const errorBox = document.getElementById("loginError");
 
   loginBtn.addEventListener("click", async () => {
-    errorBox.textContent = "";
-    console.log("LOGIN CLICK OK");
+  alert("1 - click OK");
 
-    try {
-      const res = await signInWithEmailAndPassword(
-        auth,
-        email.value.trim(),
-        password.value
-      );
+  alert("email: " + email.value);
+  alert("password length: " + password.value.length);
 
-      console.log("LOGIN OK", res.user);
+  await signInWithEmailAndPassword(auth, email.value, password.value);
 
-    } catch (err) {
-      console.error("LOGIN ERROR:", err);
-
-      errorBox.textContent = `${err.code} - ${err.message}`;
-      errorBox.style.color = "#fca5a5";
-      errorBox.style.marginTop = "12px";
-    }
-  });
+  alert("2 - després del login");
 });
 
     $("password").addEventListener("keydown", (e) => {
