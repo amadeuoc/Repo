@@ -148,6 +148,26 @@ function parseOptionSymbol(sym = "") {
   return `${ticker} ${strike} ${type} 20${yy}-${mm}-${dd}`;
 }
 
+function getTimestamp(data) {
+  return Number(data.timestamp || data.ut || 0);
+}
+
+function pad(n) {
+  return String(n).padStart(2, "0");
+}
+
+function formatDate(ts) {
+  if (!ts) return "N/A";
+
+  // Si ve en mil·lisegons, el convertim a segons
+  if (ts > 1000000000000) {
+    ts = Math.floor(ts / 1000);
+  }
+
+  const d = new Date(ts * 1000);
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())} ${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+}
+
 function renderAll() {
   const list = [...alertsMap.values()];
 
