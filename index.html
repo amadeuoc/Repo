@@ -150,47 +150,76 @@ function parseOptionSymbol(sym = "") {
 
 function renderAll() {
   const list = [...alertsMap.values()];
+
   alertsEl.innerHTML = "";
+  counterEl.textContent = `${list.length} alertes`;
 
   for (const item of list) {
     const data = item.data;
 
-    const div = document.createElement("div");
+    const title = data.filterName || data.topic || data.alertName || "Alert";
+    const symbol = data.symbol || data.sym || "";
+    const premium = data.alertPremium ?? data.premium ?? data.p ?? "";
+    const price = data.tradePrice ?? data.tp ?? "";
+    const tags = data.activeTags || data.tags || data.tg || [];
+    const execution = data.spread_execution || data.spreadExecution || data.se || "";
+    const ts = getTimestamp(data);
     const decision = item.validation?.decision;
 
+    const div = document.createElement("div");
     div.className = "card";
-    
+
     if (decision === "VALID") {
       div.style.borderColor = "#22c55e";
       div.style.background = "#13251a";
     }
-    
+
     if (decision === "REJECT") {
       div.style.borderColor = "#ef4444";
       div.style.background = "#2a1111";
     }
 
     div.innerHTML = `
-      <b>${data.filterName}</b>
-      <div>${parseOptionSymbol(data.symbol)}</div>
-      <div>Premium: ${data.alertPremium}</div>
-    
+      <div>
+        <span class="badge ${item.source || ""}">${escapeHtml(item.source || "")}</span>
+        <b>${escapeHtml(title)}</b>
+      </div>
+
+      <div style="margin-top:8px;font-size:18px">
+        ${escapeHtml(parseOptionSymbol(symbol))}
+      </div>
+
+      <div class="meta" style="margin-top:8px">
+        <span class="badge">Premium: ${escapeHtml(money(premium) || premium)}</span>
+        <span class="badge">Price: ${escapeHtml(price)}</span>
+        <span class="badge">Exec: ${escapeHtml(execution)}</span>
+        <span class="badge">Time: ${escapeHtml(formatDate(ts))}</span>
+      </div>
+
+      <div class="meta" style="margin-top:8px">
+        Tags: ${escapeHtml(Array.isArray(tags) ? tags.join(", ") : String(tags))}
+      </div>
+
       ${item.validation ? `
         <details style="margin-top:10px">
           <summary>Validation result</summary>
-          <pre>${JSON.stringify(item.validation, null, 2)}</pre>
+          <pre>${escapeHtml(JSON.stringify(item.validation, null, 2))}</pre>
         </details>
       ` : `
-        <div style="margin-top:10px;color:#888">
+        <div class="meta" style="margin-top:10px">
           Validation: pending...
         </div>
       `}
+
+      <details style="margin-top:10px">
+        <summary>Raw JSON</summary>
+        <pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>
+      </details>
     `;
-    
+
     alertsEl.appendChild(div);
   }
 }
-
 function addOrUpdateAlert(doc, source, isInitialLoad) {
   const data = doc.data();
   const key = doc.id;
