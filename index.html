@@ -156,25 +156,63 @@ function renderAll() {
     const data = item.data;
 
     const div = document.createElement("div");
+    const decision = item.validation?.decision;
+
     div.className = "card";
+    
+    if (decision === "VALID") {
+      div.style.borderColor = "#22c55e";
+      div.style.background = "#13251a";
+    }
+    
+    if (decision === "REJECT") {
+      div.style.borderColor = "#ef4444";
+      div.style.background = "#2a1111";
+    }
 
     div.innerHTML = `
       <b>${data.filterName}</b>
       <div>${parseOptionSymbol(data.symbol)}</div>
       <div>Premium: ${data.alertPremium}</div>
+    
+      ${item.validation ? `
+        <details style="margin-top:10px">
+          <summary>Validation result</summary>
+          <pre>${JSON.stringify(item.validation, null, 2)}</pre>
+        </details>
+      ` : `
+        <div style="margin-top:10px;color:#888">
+          Validation: pending...
+        </div>
+      `}
     `;
-
+    
     alertsEl.appendChild(div);
   }
 }
 
 function addOrUpdateAlert(doc, source, isInitialLoad) {
   const data = doc.data();
-  alertsMap.set(doc.id, { data });
+  const key = doc.id;
+
+  const existing = alertsMap.get(key);
+
+  alertsMap.set(key, {
+    data,
+    source,
+    validation: existing?.validation || null
+  });
 
   if (!isInitialLoad) {
     validateAlertWithBackend(data).then(result => {
       console.log("BACKEND RESULT", result);
+
+      const current = alertsMap.get(key);
+      if (current) {
+        current.validation = result;
+        alertsMap.set(key, current);
+        renderAll();
+      }
     });
   }
 
