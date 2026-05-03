@@ -92,6 +92,28 @@ import {
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
+async function validateAlertWithBackend(alert) {
+  try {
+    const res = await fetch("http://localhost:8000/analyze", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ alert })
+    });
+
+    return await res.json();
+
+  } catch (err) {
+    console.error("BACKEND VALIDATION ERROR", err);
+    return {
+      status: "error",
+      decision: "SKIP",
+      reason: err.message
+    };
+  }
+}
+
 const firebaseConfig = {
   apiKey: "AIzaSyAfa3y-u4PdIgOmqrXVXJKV6Up5ntyZDJU",
   authDomain: "liteflow-40a37.firebaseapp.com",
@@ -204,6 +226,10 @@ function addOrUpdateAlert(doc, source, isInitialLoad) {
 
   if (!isInitialLoad && !alreadyExists) {
     beep();
+
+    validateAlertWithBackend(data).then(result => {
+      console.log("BACKEND RESULT", result);
+    });
   }
 
   renderAll();
